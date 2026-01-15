@@ -1,31 +1,24 @@
-import { useEffect, useState } from 'react';
-import API from '../api/axios.jsx';
-import { Link } from 'react-router-dom';
+import Navbar from "../components/Navbar";
+import Main from "../components/Main";
+import AddFoodModal from "../components/AddFoodModal";
+import { useState } from "react";
+
 
 const Dashboard = () => {
-  const [foods, setFoods] = useState([]);
-
-  useEffect(() => {
-    API.get('/food').then((res) => setFoods(res.data));
-  }, []);
+	
+	const [isShow, setShow] = useState(false);
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <div className="flex justify-between mb-4">
-        <h1 className="text-xl font-bold">Today's Calories</h1>
-        <Link to="/add-food" className="bg-green-500 text-white px-4 py-2 rounded">
-          Add Food
-        </Link>
-      </div>
+    <div className="bg-gray-200 w-full h-full">
+			<div className="m-auto max-w-4xl p-4">
+				<Navbar/>
+				<Main/>
+				<div className="fixed bg-green-600 hover:bg-green-700 transition-all duration-200 rounded-md cursor-pointer py-2 px-4 text-white right-5 bottom-5">
+					<button onClick={() => setShow(!isShow)} className="cursor-pointer text-sm">Add Entry</button>
+				</div>
 
-      <div className="space-y-3">
-        {foods.map((food) => (
-          <div key={food._id} className="p-4 bg-white rounded shadow flex justify-between">
-            <span>{food.foodName}</span>
-            <span>{food.calories} kcal</span>
-          </div>
-        ))}
-      </div>
+				{isShow && <AddFoodModal setShow={setShow} isShow={isShow}/>}
+			</div>
     </div>
   );
 };

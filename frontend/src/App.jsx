@@ -5,7 +5,6 @@ import { AuthContext } from "./context/AuthContext";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
-import AddFood from "./pages/AddFood";
 
 const App = () => {
   const { token } = useContext(AuthContext);
@@ -28,10 +27,7 @@ const App = () => {
           element={token ? <Dashboard /> : <Navigate to="/login" />}
         />
 
-        <Route
-          path="/add-food"
-          element={token ? <AddFood /> : <Navigate to="/login" />}
-        />
+      
       </Routes>
     </BrowserRouter>
   );

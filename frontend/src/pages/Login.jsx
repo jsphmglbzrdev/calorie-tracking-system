@@ -1,7 +1,7 @@
 import { useState, useContext, useEffect } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { Link } from "react-router-dom";
-import { FourSquare } from "react-loading-indicators";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 const Login = () => {
   const { login } = useContext(AuthContext);
@@ -41,12 +41,16 @@ const Login = () => {
   }, [error]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-200 relative">
+    <div
+      className="min-h-screen flex items-center justify-center relative bg-cover bg-center"
+      style={{ backgroundImage: "url('/img/food-bg.jpg')" }}
+    >
+      {/* Dark overlay for better contrast */}
+      <div className="absolute inset-0 bg-green-300 opacity-30 z-0" />
+
       {/* Loading Overlay */}
       {loading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/30 z-50">
-          <FourSquare color="#32cd32" size="medium" />
-        </div>
+				<LoadingSpinner/>
       )}
 
       {/* Login Form */}
@@ -83,9 +87,7 @@ const Login = () => {
 
         {/* Error Message */}
         {error && (
-          <div className="text-red-500 text-sm text-center">
-            {error}
-          </div>
+          <div className="text-red-500 text-sm text-center">{error}</div>
         )}
 
         {/* Actions */}
@@ -93,9 +95,13 @@ const Login = () => {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full text-white p-2 rounded-md transition-all
-              ${loading ? "bg-green-400 cursor-not-allowed" : "bg-green-500 hover:bg-green-600"}
-            `}
+            className={`cursor-pointer w-full text-white p-2 rounded-md transition-all
+          ${
+            loading
+              ? "bg-green-400 cursor-not-allowed"
+              : "bg-green-500 hover:bg-green-600"
+          }
+        `}
           >
             {loading ? "Logging in..." : "Login"}
           </button>

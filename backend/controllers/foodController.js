@@ -6,7 +6,7 @@ export const addFood = async (req, res) => {
     const { foodName, calories, protein, carbs, fat } = req.body;
 
     const food = await FoodLog.create({
-      user: req.user,
+      user: req.user.id,
       foodName,
       calories,
       protein,

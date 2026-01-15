@@ -13,14 +13,33 @@ export const AuthProvider = ({ children }) => {
     if (storedToken) {
       setToken(storedToken);
     }
+		fetchUser(storedToken);
   }, []);
 
+  const fetchUser = async (token) => {
+		try{
+			const res = await axios.get("http://localhost:5000/api/auth/me", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    	});
+
+			setUser(res.data.user.name);
+		}catch(err){
+			logout()
+		}
+   
+  };
+
   const login = async (formData) => {
-    const res = await axios.post("http://localhost:5000/api/auth/login", formData);
+    const res = await axios.post(
+      "http://localhost:5000/api/auth/login",
+      formData
+    );
 
     localStorage.setItem("token", res.data.token);
     setToken(res.data.token);
-    setUser(res.data.user);
+    setUser(res.data.user.name);
   };
 
   const logout = () => {
