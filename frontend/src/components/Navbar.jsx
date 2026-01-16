@@ -15,7 +15,7 @@ const Navbar = () => {
   const [isActive, setActive] = useState(false);
   console.log(isActive);
   return (
-      <div className="flex items-center sticky top-0 justify-between mb-4 py-2 px-5 bg-white rounded-2xl shadow-2xl">
+      <div className="flex items-center sticky top-0 justify-between mb-4 py-2 px-5 bg-white rounded-2xl shadow-2xl z-50">
         <div className="font-bold text-2xl text-green-600">KiloWise</div>
 
         <div className="flex items-center relative justify-center gap-2 ">

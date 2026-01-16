@@ -1,11 +1,10 @@
-import API from "../api/axios.jsx";
-import { useState } from "react";
+import { useState, useContext } from "react";
 import LoadingSpinner from "./LoadingSpinner.jsx";
+import {FoodContext} from "../context/FoodContext";
 
 export default function AddFoodModal({ isShow, setShow }) {
 
-	const [isLoading, setIsLoading] = useState(false);
-
+	const { addFoodData, isLoading } = useContext(FoodContext);
 
 
   const [form, setForm] = useState({
@@ -18,10 +17,8 @@ export default function AddFoodModal({ isShow, setShow }) {
 
   const submitHandler = async (e) => {
     e.preventDefault();
-		setIsLoading(true);
     try {
-      const res = await API.post("/food/", form);
-      console.log(res);
+      await addFoodData(form);
       setForm({
         foodName: "",
         calories: "",
@@ -30,7 +27,6 @@ export default function AddFoodModal({ isShow, setShow }) {
         fat: "",
       });
 			setShow(!isShow);
-			setIsLoading(false);
 			
       console.log("Food added successfully");
     } catch (err) {

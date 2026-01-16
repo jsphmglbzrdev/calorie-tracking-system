@@ -24,7 +24,7 @@ export const addFood = async (req, res) => {
 
 export const getFoods = async (req, res) => {
   try {
-    const foods = await FoodLog.find({ user: req.user })
+    const foods = await FoodLog.find({ user: req.user.id })
       .sort({ date: -1 });
 
     res.json(foods);

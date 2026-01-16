@@ -6,7 +6,7 @@ export const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
   const [user, setUser] = useState(null);
-
+	const [calories, setCalories] = useState(0);
   // Load token on app start
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
@@ -25,6 +25,7 @@ export const AuthProvider = ({ children }) => {
     	});
 
 			setUser(res.data.user.name);
+			setCalories(res.data.user.dailyCalories);
 		}catch(err){
 			logout()
 		}
@@ -49,7 +50,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ token, user, login, logout }}>
+    <AuthContext.Provider value={{ token, user, calories, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
