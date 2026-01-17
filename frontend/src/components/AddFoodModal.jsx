@@ -1,11 +1,11 @@
 import { useState, useContext } from "react";
 import LoadingSpinner from "./LoadingSpinner.jsx";
-import {FoodContext} from "../context/FoodContext";
+import { FoodContext } from "../context/FoodContext";
+import {toast} from 'react-toastify'
 
-export default function AddFoodModal({ isShow, setShow }) {
 
-	const { addFoodData, isLoading } = useContext(FoodContext);
-
+export default function AddFoodModal({ isModalOpen, setIsModalOpen }) {
+  const { addFoodData, isLoading } = useContext(FoodContext);
 
   const [form, setForm] = useState({
     foodName: "",
@@ -19,6 +19,7 @@ export default function AddFoodModal({ isShow, setShow }) {
     e.preventDefault();
     try {
       await addFoodData(form);
+			
       setForm({
         foodName: "",
         calories: "",
@@ -26,19 +27,25 @@ export default function AddFoodModal({ isShow, setShow }) {
         carbs: "",
         fat: "",
       });
-			setShow(!isShow);
-			
+
+			toast("Food added successfully!", {className: 'text-green-600 font-semibold'});
+
+      setIsModalOpen(!isModalOpen);
+ 
+
       console.log("Food added successfully");
     } catch (err) {
       console.log(err.response?.data?.message || "Failed to add food");
     }
   };
 
+  if (!isModalOpen) return null;
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 opacity-100">
       {/* Modal */}
       <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-lg">
-				{isLoading && <LoadingSpinner/>}
+        {isLoading && <LoadingSpinner />}
         <h2 className="mb-4 text-xl font-semibold text-center">
           Track your food intake!
         </h2>
@@ -116,7 +123,7 @@ export default function AddFoodModal({ isShow, setShow }) {
               htmlFor="Fat"
               className="text-sm font-semibold text-gray-500"
             >
-              Fat
+              FatI
             </label>
             <input
               required
@@ -132,7 +139,7 @@ export default function AddFoodModal({ isShow, setShow }) {
             <button
               type="button"
               className="w-full cursor-pointer rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300"
-              onClick={() => setShow(!isShow)}
+              onClick={() => setIsModalOpen(!isModalOpen)}
             >
               Cancel
             </button>

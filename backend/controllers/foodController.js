@@ -82,3 +82,21 @@ export const deleteFood = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+export const getFoodById = async (req, res) => {
+
+	try{
+		const food = awaitFoodLog.findById(req.params.id);
+
+		if(!food){
+			return res.status(404).json({message: 'Food not found'});
+		}
+
+		res.json(food);
+
+	}catch(error){
+		res.status(500).json({message: error.message});
+	
+	}
+
+}

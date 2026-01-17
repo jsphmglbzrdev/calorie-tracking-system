@@ -3,7 +3,8 @@ import {
   addFood,
   getFoods,
   updateFood,
-  deleteFood
+  deleteFood,
+	getFoodById
 } from '../controllers/foodController.js';
 
 import authMiddleware from '../middleware/authMiddleware.js';
@@ -14,6 +15,7 @@ router.use(authMiddleware);
 
 router.post('/', addFood);
 router.get('/', getFoods);
+router.get('/:id', getFoodById);
 router.put('/:id', updateFood);
 router.delete('/:id', deleteFood);
 

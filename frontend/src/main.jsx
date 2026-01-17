@@ -4,12 +4,13 @@ import './index.css'
 import App from './App.jsx'
 import { AuthProvider } from './context/AuthContext.jsx';
 import { FoodProvider } from './context/FoodContext.jsx';
+
 createRoot(document.getElementById('root')).render(
-  <AuthProvider>
-		<FoodProvider>
+		<AuthProvider>
+			<FoodProvider>
 
-    	<App />
-		</FoodProvider>
+				<App />
+			</FoodProvider>
 
-  </AuthProvider>
+		</AuthProvider>
 )

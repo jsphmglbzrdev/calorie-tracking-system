@@ -1,10 +1,10 @@
 import FoodTrackContainer from "./FoodTrackContainer.jsx"
 import FoodStatus from "./FoodStatus.jsx"
-const Main = () => {
+const Main = ({setIsUpdateModalOpen}) => {
 	return (
-		<div className="bg-white rounded-2xl shadow-2xl p-6 scroll-smooth mt-4 h-screen w-full overflow-auto thin-scrollbar">
+		<div className="bg-white rounded-2xl p-2 shadow-2xl scroll-smooth mt-4 w-full min-h-screen overflow-auto thin-scrollbar">
 			<FoodStatus/>
-			<FoodTrackContainer/>
+			<FoodTrackContainer setIsUpdateModalOpen={setIsUpdateModalOpen}/>
 		</div>
 	)
 }
