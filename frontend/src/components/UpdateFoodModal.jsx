@@ -3,8 +3,8 @@ import { FoodContext } from "../context/FoodContext.jsx";
 import { toast } from "react-toastify";
 
 export default function UpdateFoodModal({ isUpdateModalOpen, setIsUpdateModalOpen }) {
-  const { selectedFoodData } = useContext(FoodContext);
-
+  const { selectedFoodData, updateFoodData, isLoading } = useContext(FoodContext);
+	
   const [form, setForm] = useState({
     foodName: "",
     calories: "",
@@ -17,6 +17,7 @@ export default function UpdateFoodModal({ isUpdateModalOpen, setIsUpdateModalOpe
   useEffect(() => {
     if (selectedFoodData) {
       setForm({
+				id: selectedFoodData._id,
         foodName: selectedFoodData.foodName || "",
         calories: selectedFoodData.calories || "",
         protein: selectedFoodData.protein || "",
@@ -27,12 +28,18 @@ export default function UpdateFoodModal({ isUpdateModalOpen, setIsUpdateModalOpe
   }, [selectedFoodData]);
 
   if (!isUpdateModalOpen || !selectedFoodData) return null;
+	
+	
 
   const submitHandler = (e) => {
+		
     e.preventDefault();
     toast("Food updated successfully!");
+		updateFoodData(form.id, form)
     setIsUpdateModalOpen(false);
   };
+
+	if(isLoading) return <LoadingSpinner/>
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
@@ -60,7 +67,7 @@ export default function UpdateFoodModal({ isUpdateModalOpen, setIsUpdateModalOpe
                 onChange={(e) =>
                   setForm({ ...form, [key]: e.target.value })
                 }
-                className="border rounded-md py-2 px-2 focus:outline-green-700"
+                className="border focus:outline-green-700 border-gray-400 rounded-md py-2 pl-2"
               />
             </div>
           ))}
@@ -68,15 +75,15 @@ export default function UpdateFoodModal({ isUpdateModalOpen, setIsUpdateModalOpe
           <div className="mt-4 flex gap-3">
             <button
               type="button"
-              onClick={() => setIsOpen(false)}
-              className="w-full rounded-md border border-gray-300 py-2 text-sm"
+              onClick={() => setIsUpdateModalOpen(false)}
+              className="w-full cursor-pointer rounded-md border border-gray-300 py-2 text-sm"
             >
               Cancel
             </button>
 
             <button
               type="submit"
-              className="w-full rounded-md bg-green-600 py-2 text-sm font-semibold text-white hover:bg-green-700"
+              className="w-full cursor-pointer rounded-md bg-green-600 py-2 text-sm font-semibold text-white hover:bg-green-700"
             >
               Update
             </button>

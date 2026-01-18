@@ -49,9 +49,7 @@ const Login = () => {
       <div className="absolute inset-0 bg-green-300 opacity-30 z-0" />
 
       {/* Loading Overlay */}
-      {loading && (
-				<LoadingSpinner/>
-      )}
+      {loading && <LoadingSpinner />}
 
       {/* Login Form */}
       <form

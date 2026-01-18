@@ -7,6 +7,7 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 
 const App = () => {
+	
   const { token } = useContext(AuthContext);
 
   return (

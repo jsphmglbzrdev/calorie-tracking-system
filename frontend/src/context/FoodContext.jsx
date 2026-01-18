@@ -34,10 +34,29 @@ export const FoodProvider = ({ children }) => {
   };
 
   // Select food (NO loading state)
-  const selectedFood = (food) => {
-    setSelectedFoodData(food);
-    console.log("Selected food:", food);
+  const selectedFood = async(food) => {
+		try{
+			const res = await API.get(`/food/${food}`);
+			console.log("Selected food data from API:", res.data);
+			setSelectedFoodData(res.data);
+		}catch(err){
+			console.log(err.response?.data?.message || "Failed to fetch selected food data");
+		}
+    
   };
+
+	const updateFoodData = async(food, data) => {
+		setLoading(true)
+		try{
+			const res = await API.put(`/food/${food}`, data);
+			console.log("Updated data: ", res.data);
+			setFoodData(prev => prev.map(food => food._id === res.data._id ? res.data : food))
+		}catch(err){
+			console.log(err.response?.data?.message || "Failed to update food data");
+		}finally{
+			setLoading(false)
+		}
+	}
 
   useEffect(() => {
     fetchFoodData();
@@ -51,6 +70,7 @@ export const FoodProvider = ({ children }) => {
         addFoodData,
         selectedFood,
         selectedFoodData,
+				updateFoodData
       }}
     >
       {children}
