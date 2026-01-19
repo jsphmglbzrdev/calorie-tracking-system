@@ -52,7 +52,7 @@ export const updateFood = async (req, res) => {
       req.params.id,
       req.body,
       { new: true }
-    );
+    ); 
 
     res.json(updatedFood);
   } catch (error) {
@@ -63,25 +63,26 @@ export const updateFood = async (req, res) => {
 
 
 export const deleteFood = async (req, res) => {
-	try {
-		const food = await FoodLog.findById(req.params.id);
+  try {
+    // Corrected: use findOne with user filter
+    const food = await FoodLog.findOne({
+      _id: req.params.id,
+      user: req.user.id,
+    });
 
-		if (!food) {
-			return res.status(404).json({ message: 'Food not found' });
-		}
+    if (!food) {
+      return res.status(404).json({ message: 'Food not found or not authorized' });
+    }
 
-		if (food.user.toString() !== req.user) {
-			return res.status(401).json({ message: 'Not authorized' });
-		}
+    await food.deleteOne();
 
-		await food.deleteOne();
+    res.json({ message: 'Food removed' });
 
-		res.json({ message: 'Food removed' });
-
-	} catch (error) {
-		res.status(500).json({ message: error.message });
-	}
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };
+
 
 export const getFoodById = async (req, res) => {
 

@@ -1,10 +1,15 @@
 import { useState, useContext, useEffect } from "react";
 import { FoodContext } from "../context/FoodContext.jsx";
 import { toast } from "react-toastify";
+import LoadingSpinnner from "./LoadingSpinner.jsx";
 
-export default function UpdateFoodModal({ isUpdateModalOpen, setIsUpdateModalOpen }) {
-  const { selectedFoodData, updateFoodData, isLoading } = useContext(FoodContext);
-	
+export default function UpdateFoodModal({
+  isUpdateModalOpen,
+  setIsUpdateModalOpen,
+}) {
+  const { selectedFoodData, updateFoodData, isLoading, deleteFood } =
+    useContext(FoodContext);
+
   const [form, setForm] = useState({
     foodName: "",
     calories: "",
@@ -17,7 +22,7 @@ export default function UpdateFoodModal({ isUpdateModalOpen, setIsUpdateModalOpe
   useEffect(() => {
     if (selectedFoodData) {
       setForm({
-				id: selectedFoodData._id,
+        id: selectedFoodData._id,
         foodName: selectedFoodData.foodName || "",
         calories: selectedFoodData.calories || "",
         protein: selectedFoodData.protein || "",
@@ -28,18 +33,25 @@ export default function UpdateFoodModal({ isUpdateModalOpen, setIsUpdateModalOpe
   }, [selectedFoodData]);
 
   if (!isUpdateModalOpen || !selectedFoodData) return null;
-	
-	
 
   const submitHandler = (e) => {
-		
     e.preventDefault();
     toast("Food updated successfully!");
-		updateFoodData(form.id, form)
+    updateFoodData(form.id, form);
     setIsUpdateModalOpen(false);
   };
 
-	if(isLoading) return <LoadingSpinner/>
+  const deleteFoodHandler = async () => {
+    try {
+      await deleteFood(form.id); // Wait for deletion to finish
+      toast.success("Food deleted successfully!");
+      setIsUpdateModalOpen(false); // Close modal only after success
+    } catch (err) {
+      toast.error("Failed to delete food. Please try again.");
+    }
+  };
+
+  if (isLoading) return <LoadingSpinnner/>;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
@@ -64,28 +76,35 @@ export default function UpdateFoodModal({ isUpdateModalOpen, setIsUpdateModalOpe
                 required
                 type={type}
                 value={form[key]}
-                onChange={(e) =>
-                  setForm({ ...form, [key]: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, [key]: e.target.value })}
                 className="border focus:outline-green-700 border-gray-400 rounded-md py-2 pl-2"
               />
             </div>
           ))}
 
-          <div className="mt-4 flex gap-3">
-            <button
-              type="button"
-              onClick={() => setIsUpdateModalOpen(false)}
-              className="w-full cursor-pointer rounded-md border border-gray-300 py-2 text-sm"
-            >
-              Cancel
-            </button>
+          <div className="mt-4 flex items-center justify-center flex-col gap-3">
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => setIsUpdateModalOpen(false)}
+                className="w-full cursor-pointer rounded-md border border-gray-300 py-2 text-sm px-5"
+              >
+                Cancel
+              </button>
 
+              <button
+                type="submit"
+                className="w-full cursor-pointer rounded-md bg-green-600 py-2 px-5 text-sm font-semibold text-white hover:bg-green-700"
+              >
+                Update
+              </button>
+            </div>
             <button
-              type="submit"
-              className="w-full cursor-pointer rounded-md bg-green-600 py-2 text-sm font-semibold text-white hover:bg-green-700"
+              onClick={deleteFoodHandler}
+              type="button"
+              className="w-full cursor-pointer rounded-md bg-red-400 py-2 text-sm font-semibold text-white hover:bg-red-500"
             >
-              Update
+              Remove this entry
             </button>
           </div>
         </form>

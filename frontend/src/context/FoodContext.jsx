@@ -1,14 +1,52 @@
 import API from "../api/axios.jsx";
-import { useState, useEffect, createContext } from "react";
+import { useState, useEffect, createContext, useContext } from "react";
+import { AuthContext } from "./AuthContext.jsx";
 
 export const FoodContext = createContext();
 
 export const FoodProvider = ({ children }) => {
+  const { calories } = useContext(AuthContext);
+
   const [foodData, setFoodData] = useState([]);
-  const [isLoading, setLoading] = useState(true); // page load only
+  const [isLoading, setLoading] = useState(true);
   const [selectedFoodData, setSelectedFoodData] = useState(null);
 
-  // Fetch all foods (page load)
+  // Totals (base state only)
+  const [totalCalories, setTotalCalories] = useState(0);
+  const [totalProtein, setTotalProtein] = useState(0);
+  const [totalCarbs, setTotalCarbs] = useState(0);
+  const [totalFat, setTotalFat] = useState(0);
+
+  // ✅ Calculate totals whenever foodData changes
+  useEffect(() => {
+    const caloriesIntake = foodData.reduce(
+      (acc, food) => acc + Number(food.calories || 0),
+      0,
+    );
+
+    const protein = foodData.reduce(
+      (acc, food) => acc + Number(food.protein || 0),
+      0,
+    );
+
+    const carbs = foodData.reduce(
+      (acc, food) => acc + Number(food.carbs || 0),
+      0,
+    );
+
+    const fat = foodData.reduce((acc, food) => acc + Number(food.fat || 0), 0);
+
+    setTotalCalories(caloriesIntake);
+    setTotalProtein(protein);
+    setTotalCarbs(carbs);
+    setTotalFat(fat);
+  }, [foodData]);
+
+  // ✅ Derived values (NO STATE)
+  const caloriesRemaining = Math.max(calories - totalCalories, 0);
+  const isLimitReached = totalCalories >= calories;
+
+  // Fetch foods
   const fetchFoodData = async () => {
     setLoading(true);
     try {
@@ -21,7 +59,7 @@ export const FoodProvider = ({ children }) => {
     }
   };
 
-  // Add food and update UI instantly
+  // Add food
   const addFoodData = async (food) => {
     try {
       const res = await API.post("/food/", food);
@@ -33,30 +71,44 @@ export const FoodProvider = ({ children }) => {
     }
   };
 
-  // Select food (NO loading state)
-  const selectedFood = async(food) => {
-		try{
-			const res = await API.get(`/food/${food}`);
-			console.log("Selected food data from API:", res.data);
-			setSelectedFoodData(res.data);
-		}catch(err){
-			console.log(err.response?.data?.message || "Failed to fetch selected food data");
-		}
-    
+  // Select food
+  const selectedFood = async (id) => {
+    try {
+      const res = await API.get(`/food/${id}`);
+      setSelectedFoodData(res.data);
+    } catch (err) {
+      console.log(err.response?.data?.message || "Failed to fetch food data");
+    }
   };
 
-	const updateFoodData = async(food, data) => {
-		setLoading(true)
-		try{
-			const res = await API.put(`/food/${food}`, data);
-			console.log("Updated data: ", res.data);
-			setFoodData(prev => prev.map(food => food._id === res.data._id ? res.data : food))
-		}catch(err){
-			console.log(err.response?.data?.message || "Failed to update food data");
-		}finally{
-			setLoading(false)
-		}
-	}
+  // Update food
+  const updateFoodData = async (id, data) => {
+    setLoading(true);
+    try {
+      const res = await API.put(`/food/${id}`, data);
+      setFoodData((prev) =>
+        prev.map((food) => (food._id === res.data._id ? res.data : food)),
+      );
+    } catch (err) {
+      console.log(err.response?.data?.message || "Failed to update food data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteFood = async (id) => {
+    setLoading(true);
+    try {
+      await API.delete(`/food/${id}`);
+      // Remove the deleted food from local state
+      setFoodData((prev) => prev.filter((food) => food._id !== id));
+    
+    } catch (err) {
+      console.log(err.response?.data?.message || "Failed to delete food data");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchFoodData();
@@ -70,7 +122,15 @@ export const FoodProvider = ({ children }) => {
         addFoodData,
         selectedFood,
         selectedFoodData,
-				updateFoodData
+        updateFoodData,
+        deleteFood,
+        totalCalories,
+        totalProtein,
+        totalCarbs,
+        totalFat,
+        caloriesRemaining,
+        isLimitReached,
+        calories,
       }}
     >
       {children}

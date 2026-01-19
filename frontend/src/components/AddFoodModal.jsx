@@ -1,11 +1,13 @@
 import { useState, useContext } from "react";
 import LoadingSpinner from "./LoadingSpinner.jsx";
 import { FoodContext } from "../context/FoodContext";
+import { AuthContext } from "../context/AuthContext.jsx";
 import {toast} from 'react-toastify'
 
 
 export default function AddFoodModal({ isModalOpen, setIsModalOpen }) {
   const { addFoodData, isLoading } = useContext(FoodContext);
+	const { calories } = useContext(AuthContext)
 
   const [form, setForm] = useState({
     foodName: "",
@@ -15,10 +17,22 @@ export default function AddFoodModal({ isModalOpen, setIsModalOpen }) {
     fat: "",
   });
 
+
   const submitHandler = async (e) => {
     e.preventDefault();
+		
+		if (form.calories <= 0) {
+			toast.error("Calories must be greater than zero");
+			return;
+		}
+
+		if (form.calories > calories) {
+			toast.error("Calories exceed your daily limit");
+			return;
+		}
     try {
       await addFoodData(form);
+
 			
       setForm({
         foodName: "",
@@ -123,7 +137,7 @@ export default function AddFoodModal({ isModalOpen, setIsModalOpen }) {
               htmlFor="Fat"
               className="text-sm font-semibold text-gray-500"
             >
-              FatI
+              Fat
             </label>
             <input
               required
