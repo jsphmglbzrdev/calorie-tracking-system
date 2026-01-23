@@ -2,12 +2,17 @@ import { useState, useContext } from "react";
 import LoadingSpinner from "./LoadingSpinner.jsx";
 import { FoodContext } from "../context/FoodContext";
 import { AuthContext } from "../context/AuthContext.jsx";
-import {toast} from 'react-toastify'
-
+import { toast } from "react-toastify";
+import { useReward } from "react-rewards";
 
 export default function AddFoodModal({ isModalOpen, setIsModalOpen }) {
-  const { addFoodData, isLoading } = useContext(FoodContext);
-	const { calories } = useContext(AuthContext)
+  const { reward: confettiReward, isAnimating: isConfettiAnimating } =
+    useReward("confettiReward", "confetti");
+  const { reward: balloonsReward, isAnimating: isBalloonsAnimating } =
+    useReward("balloonsReward", "balloons");
+
+  const { addFoodData, isLoading, percentage } = useContext(FoodContext);
+  const { calories } = useContext(AuthContext);
 
   const [form, setForm] = useState({
     foodName: "",
@@ -17,23 +22,27 @@ export default function AddFoodModal({ isModalOpen, setIsModalOpen }) {
     fat: "",
   });
 
-
   const submitHandler = async (e) => {
     e.preventDefault();
-		
-		if (form.calories <= 0) {
-			toast.error("Calories must be greater than zero");
-			return;
-		}
 
-		if (form.calories > calories) {
-			toast.error("Calories exceed your daily limit");
-			return;
-		}
+    if (form.calories <= 0) {
+      toast.error("Calories must be greater than zero");
+      return;
+    }
+
+    if (form.calories > calories) {
+      toast.error("Calories exceed your daily limit");
+      return;
+    }
+
+    if (percentage == 100) {
+      toast.error("Daily calorie limit reached");
+      return;
+    }
+
     try {
       await addFoodData(form);
 
-			
       setForm({
         foodName: "",
         calories: "",
@@ -42,10 +51,11 @@ export default function AddFoodModal({ isModalOpen, setIsModalOpen }) {
         fat: "",
       });
 
-			toast("Food added successfully!", {className: 'text-green-600 font-semibold'});
+      toast("Food added successfully!", {
+        className: "text-green-600 font-semibold",
+      });
 
       setIsModalOpen(!isModalOpen);
- 
 
       console.log("Food added successfully");
     } catch (err) {
@@ -167,6 +177,16 @@ export default function AddFoodModal({ isModalOpen, setIsModalOpen }) {
               Add
             </button>
           </div>
+
+          <button
+					type="button"
+            disabled={isConfettiAnimating || isBalloonsAnimating}
+            onClick={() => {
+              confettiReward();
+            }}
+          >
+            🎉
+          </button>
         </form>
       </div>
     </div>

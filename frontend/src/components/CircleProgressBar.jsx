@@ -5,10 +5,8 @@ import "react-circular-progressbar/dist/styles.css";
 
 const CircleProgressBar = () => {
 
-	const { totalCalories, caloriesRemaining } = useContext(FoodContext);
-
-	const percentage = Math.round((totalCalories / caloriesRemaining) * 100);
-
+	const { percentage } = useContext(FoodContext);
+	console.log(percentage)
   return (
     <div className="w-32 h-32 text-center">
       <CircularProgressbar

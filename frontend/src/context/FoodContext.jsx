@@ -10,12 +10,15 @@ export const FoodProvider = ({ children }) => {
   const [foodData, setFoodData] = useState([]);
   const [isLoading, setLoading] = useState(true);
   const [selectedFoodData, setSelectedFoodData] = useState(null);
+  const [percentage, setPercentage] = useState(0);
 
   // Totals (base state only)
   const [totalCalories, setTotalCalories] = useState(0);
   const [totalProtein, setTotalProtein] = useState(0);
   const [totalCarbs, setTotalCarbs] = useState(0);
   const [totalFat, setTotalFat] = useState(0);
+
+  const caloriesRemainings = Math.max((calories || 0) - totalCalories, 0);
 
   // ✅ Calculate totals whenever foodData changes
   useEffect(() => {
@@ -102,7 +105,6 @@ export const FoodProvider = ({ children }) => {
       await API.delete(`/food/${id}`);
       // Remove the deleted food from local state
       setFoodData((prev) => prev.filter((food) => food._id !== id));
-    
     } catch (err) {
       console.log(err.response?.data?.message || "Failed to delete food data");
     } finally {
@@ -112,7 +114,20 @@ export const FoodProvider = ({ children }) => {
 
   useEffect(() => {
     fetchFoodData();
+  
   }, []);
+
+
+  useEffect(() => {
+    const dailyCalorieGoal = totalCalories + caloriesRemainings;
+    if (dailyCalorieGoal > 0) {
+      setPercentage(
+        Math.min(100, Math.round((totalCalories / dailyCalorieGoal) * 100)),
+      );
+    } else {
+      setPercentage(0);
+    }
+  }, [totalCalories, caloriesRemainings]);
 
   return (
     <FoodContext.Provider
@@ -131,6 +146,7 @@ export const FoodProvider = ({ children }) => {
         caloriesRemaining,
         isLimitReached,
         calories,
+        percentage,
       }}
     >
       {children}
