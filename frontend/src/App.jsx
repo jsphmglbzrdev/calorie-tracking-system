@@ -4,11 +4,18 @@ import { AuthContext } from "./context/AuthContext";
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import Dashboard from "./pages/Dashboard";
+import DashboardLayout from "./pages/Dashboard";
+import DashboardHome from "./pages/DashboardHome";
+import Profile from "./pages/Profile";
+import Settings from "./pages/Settings";
+import LoadingSpinner from "./components/LoadingSpinner";
 
 const App = () => {
-	
-  const { token } = useContext(AuthContext);
+  const { token, authLoading } = useContext(AuthContext);
+
+  if (authLoading) {
+    return <LoadingSpinner />;
+  }
 
   return (
     <BrowserRouter>
@@ -25,10 +32,12 @@ const App = () => {
 
         <Route
           path="/"
-          element={token ? <Dashboard /> : <Navigate to="/login" />}
-        />
-
-      
+          element={token ? <DashboardLayout /> : <Navigate to="/login" />}
+        >
+          <Route index element={<DashboardHome />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="settings" element={<Settings />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   );

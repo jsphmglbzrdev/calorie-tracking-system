@@ -1,5 +1,4 @@
 import { useContext, useState, useEffect } from "react";
-import { AuthContext } from "../context/AuthContext.jsx";
 import { FoodContext } from "../context/FoodContext.jsx";
 import { ChevronDown } from "lucide-react";
 
@@ -13,8 +12,6 @@ const FoodStatus = () => {
 				calories,
 				caloriesRemaining,
 				isLimitReached} = useContext(FoodContext);
-
-
 
   const foodStatus = [
     { label: "Target Calories", value: calories },

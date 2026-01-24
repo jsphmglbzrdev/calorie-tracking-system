@@ -3,15 +3,12 @@ import LoadingSpinner from "./LoadingSpinner.jsx";
 import { FoodContext } from "../context/FoodContext";
 import { AuthContext } from "../context/AuthContext.jsx";
 import { toast } from "react-toastify";
-import { useReward } from "react-rewards";
 
 export default function AddFoodModal({ isModalOpen, setIsModalOpen }) {
-  const { reward: confettiReward, isAnimating: isConfettiAnimating } =
-    useReward("confettiReward", "confetti");
-  const { reward: balloonsReward, isAnimating: isBalloonsAnimating } =
-    useReward("balloonsReward", "balloons");
+	
 
-  const { addFoodData, isLoading, percentage } = useContext(FoodContext);
+
+  const { addFoodData, isLoading, percentage, caloriesRemaining } = useContext(FoodContext);
   const { calories } = useContext(AuthContext);
 
   const [form, setForm] = useState({
@@ -30,12 +27,13 @@ export default function AddFoodModal({ isModalOpen, setIsModalOpen }) {
       return;
     }
 
-    if (form.calories > calories) {
+    if (form.calories > calories || form.calories > caloriesRemaining) {
       toast.error("Calories exceed your daily limit");
       return;
     }
 
     if (percentage == 100) {
+			
       toast.error("Daily calorie limit reached");
       return;
     }
@@ -94,7 +92,7 @@ export default function AddFoodModal({ isModalOpen, setIsModalOpen }) {
             />
           </div>
 
-          <div className="flex flex-col w-full mb-4">
+          <div className="flex flex-col w-full mb-2">
             <label
               htmlFor="Calories Count"
               className="text-sm font-semibold text-gray-500"
@@ -108,7 +106,8 @@ export default function AddFoodModal({ isModalOpen, setIsModalOpen }) {
               type="number"
               className="border focus:outline-green-700 border-gray-400 rounded-md py-2 pl-2"
             />
-          </div>
+						<span className="text-green-800 text-sm font-semibold text-right mt-2">{caloriesRemaining} kcal remaining</span>
+          </div> 
 
           <div className="flex flex-col w-full mb-4">
             <label
@@ -178,15 +177,7 @@ export default function AddFoodModal({ isModalOpen, setIsModalOpen }) {
             </button>
           </div>
 
-          <button
-					type="button"
-            disabled={isConfettiAnimating || isBalloonsAnimating}
-            onClick={() => {
-              confettiReward();
-            }}
-          >
-            🎉
-          </button>
+   
         </form>
       </div>
     </div>

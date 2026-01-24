@@ -7,14 +7,7 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
   const [user, setUser] = useState(null);
   const [calories, setCalories] = useState(0);
-  // Load token on app start
-  useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    if (storedToken) {
-      setToken(storedToken);
-    }
-    fetchUser(storedToken);
-  }, []);
+  const [authLoading, setAuthLoading] = useState(true);
 
   const fetchUser = async (token) => {
     try {
@@ -28,28 +21,57 @@ export const AuthProvider = ({ children }) => {
       setCalories(res.data.user.dailyCalories);
     } catch (err) {
       logout();
+    } finally {
+      setAuthLoading(false);
     }
   };
+
+  // Run once on app start
+  useEffect(() => {
+    const storedToken = localStorage.getItem("token");
+
+    if (!storedToken) {
+      setAuthLoading(false);
+      return;
+    }
+
+    setToken(storedToken);
+    fetchUser(storedToken);
+  }, []);
 
   const login = async (formData) => {
     const res = await axios.post(
       "http://localhost:5000/api/auth/login",
-      formData,
+      formData
     );
 
-    localStorage.setItem("token", res.data.token);
-    setToken(res.data.token);
-    setUser(res.data.user.name);
+    const token = res.data.token;
+
+    localStorage.setItem("token", token);
+    setToken(token);
+
+    // 🔥 fetch full user data immediately
+    await fetchUser(token);
   };
 
   const logout = () => {
     localStorage.removeItem("token");
     setToken(null);
     setUser(null);
+    setCalories(0);
   };
 
   return (
-    <AuthContext.Provider value={{ token, user, calories, login, logout }}>
+    <AuthContext.Provider
+      value={{
+        token,
+        user,
+        calories,
+        authLoading,
+        login,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

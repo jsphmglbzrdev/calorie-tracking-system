@@ -5,95 +5,117 @@ import { AuthContext } from "./AuthContext.jsx";
 export const FoodContext = createContext();
 
 export const FoodProvider = ({ children }) => {
-  const { calories } = useContext(AuthContext);
+  const { calories, token } = useContext(AuthContext);
 
+  // Core state
   const [foodData, setFoodData] = useState([]);
-  const [isLoading, setLoading] = useState(true);
+  const [isLoading, setLoading] = useState(false);
   const [selectedFoodData, setSelectedFoodData] = useState(null);
-  const [percentage, setPercentage] = useState(0);
 
-  // Totals (base state only)
+  // Totals
   const [totalCalories, setTotalCalories] = useState(0);
   const [totalProtein, setTotalProtein] = useState(0);
   const [totalCarbs, setTotalCarbs] = useState(0);
   const [totalFat, setTotalFat] = useState(0);
 
-  const caloriesRemainings = Math.max((calories || 0) - totalCalories, 0);
+  // Progress
+  const [percentage, setPercentage] = useState(0);
 
-  // ✅ Calculate totals whenever foodData changes
-  useEffect(() => {
-    const caloriesIntake = foodData.reduce(
-      (acc, food) => acc + Number(food.calories || 0),
-      0,
-    );
-
-    const protein = foodData.reduce(
-      (acc, food) => acc + Number(food.protein || 0),
-      0,
-    );
-
-    const carbs = foodData.reduce(
-      (acc, food) => acc + Number(food.carbs || 0),
-      0,
-    );
-
-    const fat = foodData.reduce((acc, food) => acc + Number(food.fat || 0), 0);
-
-    setTotalCalories(caloriesIntake);
-    setTotalProtein(protein);
-    setTotalCarbs(carbs);
-    setTotalFat(fat);
-  }, [foodData]);
-
-  // ✅ Derived values (NO STATE)
-  const caloriesRemaining = Math.max(calories - totalCalories, 0);
-  const isLimitReached = totalCalories >= calories;
-
-  // Fetch foods
+  /* ================================
+     Fetch food data (auth-aware)
+     ================================ */
   const fetchFoodData = async () => {
     setLoading(true);
     try {
       const res = await API.get("/food/");
       setFoodData(res.data);
     } catch (err) {
-      console.log(err.response?.data?.message || "Failed to fetch food data");
+      console.error(
+        err.response?.data?.message || "Failed to fetch food data"
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  // Add food
+  // Fetch foods ONLY after token exists
+  useEffect(() => {
+    if (!token) {
+      setFoodData([]);
+      return;
+    }
+    fetchFoodData();
+  }, [token]);
+
+  /* ================================
+     Totals calculation
+     ================================ */
+  useEffect(() => {
+    const totals = foodData.reduce(
+      (acc, food) => {
+        acc.calories += Number(food.calories || 0);
+        acc.protein += Number(food.protein || 0);
+        acc.carbs += Number(food.carbs || 0);
+        acc.fat += Number(food.fat || 0);
+        return acc;
+      },
+      { calories: 0, protein: 0, carbs: 0, fat: 0 }
+    );
+
+    setTotalCalories(totals.calories);
+    setTotalProtein(totals.protein);
+    setTotalCarbs(totals.carbs);
+    setTotalFat(totals.fat);
+  }, [foodData]);
+
+  /* ================================
+     Progress calculation
+     ================================ */
+  useEffect(() => {
+    if (!calories || calories <= 0) {
+      setPercentage(0);
+      return;
+    }
+
+    setPercentage(
+      Math.min(100, Math.round((totalCalories / calories) * 100))
+    );
+  }, [totalCalories, calories]);
+
+  /* ================================
+     LocalStorage side-effect
+     ================================ */
+  useEffect(() => {
+    if (percentage === 100) {
+      localStorage.setItem("isPercentageReach", "true");
+    } else {
+      localStorage.removeItem("isPercentageReach");
+    }
+  }, [percentage]);
+
+  /* ================================
+     CRUD actions
+     ================================ */
   const addFoodData = async (food) => {
-    try {
-      const res = await API.post("/food/", food);
-      setFoodData((prev) => [...prev, res.data]);
-      return res.data;
-    } catch (err) {
-      console.log(err.response?.data?.message || "Failed to submit food data");
-      throw err;
-    }
+    const res = await API.post("/food/", food);
+    setFoodData((prev) => [...prev, res.data]);
+    return res.data;
   };
 
-  // Select food
   const selectedFood = async (id) => {
-    try {
-      const res = await API.get(`/food/${id}`);
-      setSelectedFoodData(res.data);
-    } catch (err) {
-      console.log(err.response?.data?.message || "Failed to fetch food data");
-    }
+    const res = await API.get(`/food/${id}`);
+    setSelectedFoodData(res.data);
   };
 
-  // Update food
   const updateFoodData = async (id, data) => {
     setLoading(true);
     try {
       const res = await API.put(`/food/${id}`, data);
       setFoodData((prev) =>
-        prev.map((food) => (food._id === res.data._id ? res.data : food)),
+        prev.map((food) =>
+          food._id === res.data._id ? res.data : food
+        )
       );
-    } catch (err) {
-      console.log(err.response?.data?.message || "Failed to update food data");
     } finally {
       setLoading(false);
     }
@@ -103,40 +125,33 @@ export const FoodProvider = ({ children }) => {
     setLoading(true);
     try {
       await API.delete(`/food/${id}`);
-      // Remove the deleted food from local state
       setFoodData((prev) => prev.filter((food) => food._id !== id));
-    } catch (err) {
-      console.log(err.response?.data?.message || "Failed to delete food data");
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchFoodData();
-  
-  }, []);
+  /* ================================
+     Derived values
+     ================================ */
+  const caloriesRemaining = Math.max(
+    (calories || 0) - totalCalories,
+    0
+  );
 
+  const isLimitReached = totalCalories >= (calories || 0);
 
-  useEffect(() => {
-    const dailyCalorieGoal = totalCalories + caloriesRemainings;
-    if (dailyCalorieGoal > 0) {
-      setPercentage(
-        Math.min(100, Math.round((totalCalories / dailyCalorieGoal) * 100)),
-      );
-    } else {
-      setPercentage(0);
-    }
-  }, [totalCalories, caloriesRemainings]);
-
+  /* ================================
+     Context value
+     ================================ */
   return (
     <FoodContext.Provider
       value={{
         foodData,
         isLoading,
+        selectedFoodData,
         addFoodData,
         selectedFood,
-        selectedFoodData,
         updateFoodData,
         deleteFood,
         totalCalories,
